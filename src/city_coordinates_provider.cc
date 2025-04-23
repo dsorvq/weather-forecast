@@ -34,12 +34,13 @@ bool CityCoordinatesProvider::FetchCoordinates(
     return false;
   }
 
-  if (!data[0].contains("latitude") || !data[0].contains("longitude")) {
+  if (!data[0].contains("name") || !data[0].contains("latitude") ||
+      !data[0].contains("longitude")) {
     error_message_ = "Invalid location data format in API response";
     return false;
   }
 
-  location_ = Location{request.city_name,
+  location_ = Location{data[0]["name"],
                        Coordinates{data[0]["latitude"], data[0]["longitude"]}};
 
   is_ok_ = true;

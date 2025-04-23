@@ -22,11 +22,11 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  auto coordinates = provider.GetCityCoordinates();
+  auto location = provider.GetCityLocation();
 
-  std::cout << "Coordinates of city " << city_name << '\n';
-  std::cout << "  Latitude:" << coordinates.latitude << '\n';
-  std::cout << "  Longitude:" << coordinates.longitude << '\n';
+  std::cout << "Coordinates of city " << location.city_name << '\n';
+  std::cout << "  Latitude:" << location.coordinates.latitude << '\n';
+  std::cout << "  Longitude:" << location.coordinates.longitude << '\n';
 
   return 0;
 }

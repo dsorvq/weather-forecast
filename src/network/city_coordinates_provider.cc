@@ -1,4 +1,5 @@
 #include <cpr/cpr.h>
+#include <nlohmann/json.hpp>
 
 #include "../../include/weather_forecast/network/city_coordinates_provider.h"
 
@@ -23,9 +24,10 @@ bool CityCoordinatesProvider::FetchCoordinates(
     return false;
   }
 
-  // TODO: currently a place holder
-  // need to process json 
-  location_ = Location{request.city_name, {0, 0}};
+  // TODO: what if more then one city found?
+  const nlohmann::json data = nlohmann::json::parse(response.text);
+  location_ = Location{request.city_name,
+    {data[0]["latitude"], data[0]["longitude"]}};
 
   is_ok_ = true;
 

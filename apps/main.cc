@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../include/weather_forecast/network/city_coordinates_provider.h"
+#include "../include/weather_forecast/city_coordinates_provider.h"
 
 int main(int argc, char** argv) {
   if (argc != 4) {

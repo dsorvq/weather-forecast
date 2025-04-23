@@ -19,15 +19,32 @@ bool CityCoordinatesProvider::FetchCoordinates(
       cpr::Header{{"X-Api-Key", api_key_}}
       );
 
-  if (response.status_code != 200 || response.text.empty()) {
-    error_message_ = response.error.message;
+  if (response.status_code != 200) {
+    error_message_ = response.error.message.empty() 
+      ? "API request failed with status code: " + std::to_string(response.status_code)
+      : response.error.message;
     return false;
   }
 
-  // TODO: what if more then one city found?
   const nlohmann::json data = nlohmann::json::parse(response.text);
-  location_ = Location{request.city_name,
-    {data[0]["latitude"], data[0]["longitude"]}};
+
+  if (data.empty() || !data.is_array()) {
+    error_message_ = "No location data found for city: " + request.city_name;
+    return false;
+  }
+
+  if (!data[0].contains("latitude") || !data[0].contains("longitude")) {
+    error_message_ = "Invalid location data format in API response";
+    return false;
+  }
+
+  location_ = Location{
+    request.city_name,
+      Coordinates{
+        data[0]["latitude"],
+        data[0]["longitude"]
+      }
+  };
 
   is_ok_ = true;
 

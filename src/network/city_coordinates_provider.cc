@@ -1,28 +1,29 @@
-#include <cpr/cpr.h>
-#include <nlohmann/json.hpp>
-
 #include "../../include/weather_forecast/network/city_coordinates_provider.h"
 
+#include <cpr/cpr.h>
+
+#include <nlohmann/json.hpp>
+
 namespace weather_forecast {
-CityCoordinatesProvider::CityCoordinatesProvider(
-    std::string api_url, std::string api_key) 
-  : api_url_(std::move(api_url)),
-    api_key_(std::move(api_key)), 
-    is_ok_(false) {}
+CityCoordinatesProvider::CityCoordinatesProvider(std::string api_url,
+                                                 std::string api_key)
+    : api_url_(std::move(api_url)),
+      api_key_(std::move(api_key)),
+      is_ok_(false) {}
 
 bool CityCoordinatesProvider::FetchCoordinates(
     const CityCoordinatesRequest& request) {
   is_ok_ = false;
 
-  cpr::Response response = cpr::Get(cpr::Url{api_url_},
-      cpr::Parameters{{"name", request.city_name}},
-      cpr::Header{{"X-Api-Key", api_key_}}
-      );
+  cpr::Response response =
+      cpr::Get(cpr::Url{api_url_}, cpr::Parameters{{"name", request.city_name}},
+               cpr::Header{{"X-Api-Key", api_key_}});
 
   if (response.status_code != 200) {
-    error_message_ = response.error.message.empty() 
-      ? "API request failed with status code: " + std::to_string(response.status_code)
-      : response.error.message;
+    error_message_ = response.error.message.empty()
+                         ? "API request failed with status code: " +
+                               std::to_string(response.status_code)
+                         : response.error.message;
     return false;
   }
 
@@ -38,13 +39,8 @@ bool CityCoordinatesProvider::FetchCoordinates(
     return false;
   }
 
-  location_ = Location{
-    request.city_name,
-      Coordinates{
-        data[0]["latitude"],
-        data[0]["longitude"]
-      }
-  };
+  location_ = Location{request.city_name,
+                       Coordinates{data[0]["latitude"], data[0]["longitude"]}};
 
   is_ok_ = true;
 
@@ -55,15 +51,11 @@ Coordinates CityCoordinatesProvider::GetCityCoordinates() const {
   return location_.coordinates;
 }
 
-Location CityCoordinatesProvider::GetCityLocation() const {
-  return location_;
-}
+Location CityCoordinatesProvider::GetCityLocation() const { return location_; }
 
 std::string CityCoordinatesProvider::GetErrorMessage() {
   return error_message_;
 }
 
-bool CityCoordinatesProvider::IsOk() {
-  return is_ok_;
-}
-}
+bool CityCoordinatesProvider::IsOk() { return is_ok_; }
+}  // namespace weather_forecast

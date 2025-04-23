@@ -2,41 +2,39 @@
 #include <string>
 
 namespace weather_forecast {
-  struct Coordinates {
-    float latitude{};
-    float longitude{};
-  };
+struct Coordinates {
+  float latitude{};
+  float longitude{};
+};
 
-  struct Location {
-    std::string city_name;
-    Coordinates coordinates;
-  };
+struct Location {
+  std::string city_name;
+  Coordinates coordinates;
+};
 
-  struct CityCoordinatesRequest {
-    std::string city_name;
-  };
+struct CityCoordinatesRequest {
+  std::string city_name;
+};
 
-  class CityCoordinatesProvider {
-   public:
-    explicit CityCoordinatesProvider(std::string api_url,
-        std::string api_key);
+class CityCoordinatesProvider {
+ public:
+  explicit CityCoordinatesProvider(std::string api_url, std::string api_key);
 
-    bool FetchCoordinates(const CityCoordinatesRequest& request);
+  bool FetchCoordinates(const CityCoordinatesRequest& request);
 
-    Coordinates GetCityCoordinates() const;
+  Coordinates GetCityCoordinates() const;
 
-    Location GetCityLocation() const;
+  Location GetCityLocation() const;
 
-    std::string GetErrorMessage();
+  std::string GetErrorMessage();
 
-    bool IsOk();
+  bool IsOk();
 
-   private:
-    const std::string api_url_;
-    const std::string api_key_;
-    bool is_ok_{false};
-    Location location_;
-    std::string error_message_;
-  };
-}
-
+ private:
+  const std::string api_url_;
+  const std::string api_key_;
+  bool is_ok_{false};
+  Location location_;
+  std::string error_message_;
+};
+}  // namespace weather_forecast

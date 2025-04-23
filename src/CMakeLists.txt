@@ -1,4 +1,4 @@
-add_library(weather_forecast_library network/city.cc)
+add_library(weather_forecast_library network/city_coordinates_provider.cc)
 
 target_include_directories(weather_forecast_library PUBLIC ../include)
 

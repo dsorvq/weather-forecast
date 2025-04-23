@@ -1,25 +1,32 @@
 #include <iostream>
 
-#include "../include/weather_forecast/network/city.h"
+#include "../include/weather_forecast/network/city_coordinates_provider.h"
 
 int main(int argc, char** argv) {
-  if (argc != 2) {
+  if (argc != 4) {
     std::cout << "Usage: ";
-    std::cout << argv[0] << ' ' << "<city_name>" << std::endl;
+    std::cout << argv[0] << ' ';
+    std::cout << "<api_url> <api_key> <city_name>" << std::endl;
     return 1;
   }
 
-  std::string city_name{argv[1]};
-  auto coordinates = weather_forecast::GetCityCoordinates(city_name);
+  std::string api_url{argv[1]};
+  std::string api_key{argv[2]};
+  std::string city_name{argv[3]};
 
-  if (!coordinates.has_value()) {
-    std::cout << "City not found" << '\n';
+  weather_forecast::CityCoordinatesProvider provider{api_url, api_key};
+  provider.FetchCoordinates({city_name});
+
+  if (!provider.IsOk()) {
+    std::cout << provider.GetErrorMessage() << '\n';
     return 1;
   }
+
+  auto coordinates = provider.GetCityCoordinates();
 
   std::cout << "Coordinates of city " << city_name << '\n';
-  std::cout << "  Latitude:" << coordinates->latitude << '\n';
-  std::cout << "  Longitude:" << coordinates->longitude << '\n';
+  std::cout << "  Latitude:" << coordinates.latitude << '\n';
+  std::cout << "  Longitude:" << coordinates.longitude << '\n';
 
   return 0;
 }

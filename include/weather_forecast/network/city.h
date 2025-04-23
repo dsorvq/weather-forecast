@@ -1,5 +1,6 @@
+#pragma once
 #include <optional>
-#include <string_view>
+#include <string>
 
 namespace weather_forecast {
   struct Coordinates {
@@ -7,5 +8,5 @@ namespace weather_forecast {
     float longitude{};
   };
 
-  std::optional<Coordinates> GetCityCoordinates(std::string_view city_name);
+  std::optional<Coordinates> GetCityCoordinates(const std::string& city_name);
 }

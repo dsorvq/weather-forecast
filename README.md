@@ -1,7 +1,9 @@
 # weather-forecast
 
 A lightweight C++ terminal application that displays weather forecasts
-using FTXUI for the interface and C++ Requests for API calls.
+using [FTXUI](https://github.com/ArthurSonzogni/FTXUI) for the interface and 
+[C++ Requests](https://github.com/libcpr/cpr) for API calls.
+
 
 ## Features
 

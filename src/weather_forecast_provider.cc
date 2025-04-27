@@ -8,8 +8,6 @@
 #include "weather_forecast/city_coordinates_provider.h"
 #include "weather_forecast/location.h"
 
-#include <iostream>
-
 namespace weather_forecast {
 WeatherForecastProvider::WeatherForecastProvider(std::string weather_api_url,
                                                  std::string weather_api_key,
@@ -55,8 +53,6 @@ bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
   }
 
   const nlohmann::json data = nlohmann::json::parse(response.text);
-
-  std::cerr << data << '\n';
 
   if (data.empty()) {
     error_message_ = "No forecast data found";

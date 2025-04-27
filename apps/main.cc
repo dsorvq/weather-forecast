@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "../include/weather_forecast/city_coordinates_provider.h"
+#include "../include/weather_forecast/weather_forecast_provider.h"
 
 using namespace ftxui;
 
@@ -98,6 +99,26 @@ class WeatherApp {
 };
 
 int main(int argc, char** argv) {
+  weather_forecast::WeatherForecastProvider provider_(
+      "https://api.open-meteo.com/v1/forecast", "");
+  /*
+  ││City: Moscow ││ Latitude: 55.755798 ││ Longitude: 37.617802 ││
+  */
+  provider_.FetchForecastData({{55.755798, 37.617802}, 3});
+
+  for (int i = 0; i < 3; ++i) {
+    std::cout << provider_.GetForecastData(i).date << '\n';
+    std::cout << "   morning: "
+              << provider_.GetForecastData(i).morning.temperature << '\n';
+    std::cout << "   afternoon: "
+              << provider_.GetForecastData(i).afternoon.temperature << '\n';
+    std::cout << "   evening: "
+              << provider_.GetForecastData(i).evening.temperature << '\n';
+    std::cout << "   night: "
+              << provider_.GetForecastData(i).night.temperature << '\n';
+  }
+
+  /*
   if (argc != 3) {
     std::cerr << "Usage: " << argv[0] << " <api_url> <api_key>\n";
     return 1;
@@ -109,5 +130,6 @@ int main(int argc, char** argv) {
   WeatherApp app(api_url, api_key);
   app.Run();
 
+  */
   return 0;
 }

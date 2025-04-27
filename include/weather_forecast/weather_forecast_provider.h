@@ -1,22 +1,44 @@
 #pragma once
 #include <string>
+#include <vector>
+
+#include "location.h"
 
 namespace weather_forecast {
 struct ForecastRequest {
-  std::string city;
-  std::string country_code;          // ISO 3166 country code
-  std::optional<std::string> state;  // for countries with states/regions
-  int days_to_forecast;  // number of days to forecast (1-16 typically)
-  TemperatureUnit unit;
-  WeatherProvider provider;
-  bool include_alerts;
-  bool hourly_breakdown;
+  Coordinates coordinates;
+  int forecast_days;
+};
+
+struct ForecastPoint {
+  int temperature;
+};
+
+struct ForecastData {
+  std::string date;
+  ForecastPoint morning;
+  ForecastPoint afternoon;
+  ForecastPoint evening;
+  ForecastPoint night;
 };
 
 class WeatherForecastProvider {
  public:
-  explicit WeatherForecastProvider(std::string api_url, std::string api_key);
+  WeatherForecastProvider(std::string api_url, std::string api_key);
 
-  bool Fetch(const);
+  bool FetchForecastData(const ForecastRequest request);
+
+  ForecastData GetForecastData(size_t day_offset);
+
+  std::string GetErrorMessage();
+
+  bool IsOk();
+
+ private:
+  const std::string api_url_;
+  const std::string api_key_;
+  bool is_ok_{false};
+  std::vector<ForecastData> forecast_data_;
+  std::string error_message_;
 };
 }  // namespace weather_forecast

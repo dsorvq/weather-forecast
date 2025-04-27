@@ -1,24 +1,16 @@
 #pragma once
 #include <string>
 
+#include "location.h"
+
 namespace weather_forecast {
-struct Coordinates {
-  float latitude{};
-  float longitude{};
-};
-
-struct Location {
-  std::string city_name;
-  Coordinates coordinates;
-};
-
 struct CityCoordinatesRequest {
   std::string city_name;
 };
 
 class CityCoordinatesProvider {
  public:
-  explicit CityCoordinatesProvider(std::string api_url, std::string api_key);
+  CityCoordinatesProvider(std::string api_url, std::string api_key);
 
   bool FetchCoordinates(const CityCoordinatesRequest& request);
 

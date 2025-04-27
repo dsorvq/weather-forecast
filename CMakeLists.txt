@@ -12,12 +12,20 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
-FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
-                         GIT_TAG dd967cb48ea6bcbad9f1da5ada0db8ac0d532c06)
+FetchContent_Declare(cpr 
+  GIT_REPOSITORY https://github.com/libcpr/cpr.git
+  GIT_TAG dd967cb48ea6bcbad9f1da5ada0db8ac0d532c06)
 FetchContent_MakeAvailable(cpr)
 
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_Declare(json
+  URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
 FetchContent_MakeAvailable(json)
+
+FetchContent_Declare(ftxui
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
+  GIT_TAG v6.0.2
+)
+FetchContent_MakeAvailable(ftxui)
 
 add_subdirectory(src)
 

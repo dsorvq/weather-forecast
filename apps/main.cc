@@ -1,32 +1,113 @@
+#include <ftxui/component/component.hpp>
+#include <ftxui/component/component_options.hpp>
+#include <ftxui/component/screen_interactive.hpp>
+#include <ftxui/dom/elements.hpp>
+#include <ftxui/screen/screen.hpp>
 #include <iostream>
 
 #include "../include/weather_forecast/city_coordinates_provider.h"
 
+using namespace ftxui;
+
+class WeatherApp {
+ public:
+  WeatherApp(const std::string& api_url, const std::string& api_key)
+      : provider_(api_url, api_key) {
+    input_city_ =
+        Input(&state_.city_name, "Enter city name", InputOption::Spacious());
+
+    button_search_ = Button(
+        " Search ", [this] { OnSearchClicked(); }, ButtonOption::Animated());
+
+    layout_ = Container::Horizontal({
+        input_city_,
+        button_search_,
+    });
+
+    renderer_ = Renderer(layout_, [this] { return RenderUI(); });
+  }
+
+  void Run() {
+    auto screen = ScreenInteractive::Fullscreen();
+    screen.Loop(renderer_);
+  }
+
+ private:
+  struct AppState {
+    std::string city_name;
+    std::string status_message = "Enter a city name and press Search";
+    bool show_results = false;
+    weather_forecast::Location location;
+  };
+
+  void OnSearchClicked() {
+    if (state_.city_name.empty()) {
+      state_.status_message = "Please enter a city name";
+      state_.show_results = false;
+      return;
+    }
+
+    provider_.FetchCoordinates({state_.city_name});
+
+    if (!provider_.IsOk()) {
+      state_.status_message = "Error: " + provider_.GetErrorMessage();
+      state_.show_results = false;
+    } else {
+      state_.location = provider_.GetCityLocation();
+      state_.status_message =
+          "Successfully fetched coordinates for " + state_.city_name;
+      state_.show_results = true;
+    }
+  }
+
+  Element RenderUI() {
+    std::vector<Element> children;
+
+    children.push_back(hbox({input_city_->Render() | flex,
+                             button_search_->Render() | color(Color::Green)}) |
+                       border);
+
+    children.push_back(text(state_.status_message) |
+                       color(state_.show_results ? Color::Green : Color::Red));
+
+    if (state_.show_results) {
+      children.push_back(
+          vbox({
+              text("City: " + state_.location.city_name) | bold,
+              hbox({
+                  text("Latitude: "),
+                  text(std::to_string(state_.location.coordinates.latitude)),
+              }),
+              hbox({
+                  text("Longitude: "),
+                  text(std::to_string(state_.location.coordinates.longitude)),
+              }),
+          }) |
+          border | color(Color::BlueLight));
+    }
+
+    return vbox(children) | border | bgcolor(Color::Black);
+  }
+
+  AppState state_;
+  weather_forecast::CityCoordinatesProvider provider_;
+  Component input_city_;
+  Component button_search_;
+  Component layout_;
+  Component renderer_;
+};
+
 int main(int argc, char** argv) {
-  if (argc != 4) {
-    std::cout << "Usage: ";
-    std::cout << argv[0] << ' ';
-    std::cout << "<api_url> <api_key> <city_name>" << std::endl;
+  if (argc != 3) {
+    std::cerr << "Usage: " << argv[0] << " <api_url> <api_key>\n";
     return 1;
   }
 
-  std::string api_url{argv[1]};
-  std::string api_key{argv[2]};
-  std::string city_name{argv[3]};
+  const std::string api_url = argv[1];
+  const std::string api_key = argv[2];
 
-  weather_forecast::CityCoordinatesProvider provider{api_url, api_key};
-  provider.FetchCoordinates({city_name});
-
-  if (!provider.IsOk()) {
-    std::cout << provider.GetErrorMessage() << '\n';
-    return 1;
-  }
-
-  auto location = provider.GetCityLocation();
-
-  std::cout << "Coordinates of city " << location.city_name << '\n';
-  std::cout << "  Latitude:" << location.coordinates.latitude << '\n';
-  std::cout << "  Longitude:" << location.coordinates.longitude << '\n';
+  WeatherApp app(api_url, api_key);
+  app.Run();
 
   return 0;
 }

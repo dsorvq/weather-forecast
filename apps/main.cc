@@ -84,30 +84,24 @@ class WeatherApp {
   }
 
   Component ForecastContent(const weather_forecast::ForecastData& data) {
-    auto make_section = [&](const std::string& name, int temp, int wind_speed) {
+    auto make_section = [&](const std::string& name, const auto& day_data) {
       return Renderer([=] {
         return vbox({
                    text(name) | bold | center,
-                   text("Temp: " + std::to_string(temp) + "°C"),
-                   text("Wind Speed: " + std::to_string(wind_speed) + "m/s"),
+                   text("Temp: " + std::to_string(day_data.temperature) + "°C"),
+                   text("Wind Speed: " + std::to_string(day_data.wind_speed) +
+                        "m/s"),
+                   text("Humidity: " + std::to_string(day_data.humidity) + "%"),
                }) |
                flex | border;
       });
     };
 
     return Container::Horizontal(
-               {make_section("Morning", data.morning.temperature,
-                             data.morning.wind_speed) |
-                    flex,
-                make_section("Afternoon", data.afternoon.temperature,
-                             data.afternoon.wind_speed) |
-                    flex,
-                make_section("Evening", data.evening.temperature,
-                             data.evening.wind_speed) |
-                    flex,
-                make_section("Night", data.night.temperature,
-                             data.night.wind_speed) |
-                    flex}) |
+               {make_section("Morning", data.morning) | flex,
+                make_section("Afternoon", data.afternoon) | flex,
+                make_section("Evening", data.evening) | flex,
+                make_section("Night", data.night) | flex}) |
            flex;
   }
 

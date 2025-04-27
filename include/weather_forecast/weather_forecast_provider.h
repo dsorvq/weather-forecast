@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "city_coordinates_provider.h"
+#include <nlohmann/json.hpp>
 
 namespace weather_forecast {
 struct ForecastRequest {
@@ -13,7 +14,7 @@ struct ForecastRequest {
 struct ForecastPoint {
   int temperature;
   int wind_speed;
-  int weather_code;
+  int humidity;
 };
 
 struct ForecastData {
@@ -37,6 +38,9 @@ class WeatherForecastProvider {
   std::string GetErrorMessage();
 
   bool IsOk();
+  
+ private:
+  bool ParseData(const nlohmann::json& data);
 
  private:
   const std::string api_url_;

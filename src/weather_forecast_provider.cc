@@ -1,8 +1,8 @@
 #include "weather_forecast/weather_forecast_provider.h"
 
 #include <cpr/cpr.h>
-#include <nlohmann/json.hpp>
 
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "weather_forecast/city_coordinates_provider.h"
@@ -41,7 +41,7 @@ bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
           {"forecast_days", std::to_string(request.forecast_days)},
           {"hourly", "temperature_2m"},
           {"hourly", "wind_speed_10m"},
-          {"hourly", "weather_code"},
+          {"hourly", "relative_humidity_2m"},
       });
 
   if (response.status_code != 200) {
@@ -59,13 +59,19 @@ bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
     return false;
   }
 
+  is_ok_ = ParseData(data);
+
+  return IsOk();
+}
+
+bool WeatherForecastProvider::ParseData(const nlohmann::json& data) {
   if (!data.contains("hourly")) {
     error_message_ = "Invalid forecast data format in API response";
     return false;
   }
 
-  // TODO: move to parse function
-  for (size_t i = 0; i < request.forecast_days; ++i) {
+  size_t forecast_days = data["hourly"]["time"].size() / 24;
+  for (size_t i = 0; i < forecast_days; ++i) {
     forecast_data_.emplace_back();
 
     forecast_data_.back().date =
@@ -84,16 +90,14 @@ bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
     forecast_data_.back().evening.wind_speed = wind_speeds[i * 24 + 17];
     forecast_data_.back().night.wind_speed = wind_speeds[i * 24 + 23];
 
-    const auto& weather_codes = data["hourly"]["weather_code"];
-    forecast_data_.back().morning.weather_code = weather_codes[i * 24 + 6];
-    forecast_data_.back().afternoon.weather_code = weather_codes[i * 24 + 12];
-    forecast_data_.back().evening.weather_code = weather_codes[i * 24 + 17];
-    forecast_data_.back().night.weather_code = weather_codes[i * 24 + 23];
+    const auto& humidities = data["hourly"]["relative_humidity_2m"];
+    forecast_data_.back().morning.humidity = humidities[i * 24 + 6];
+    forecast_data_.back().afternoon.humidity = humidities[i * 24 + 12];
+    forecast_data_.back().evening.humidity = humidities[i * 24 + 17];
+    forecast_data_.back().night.humidity = humidities[i * 24 + 23];
   }
 
-  is_ok_ = true;
-
-  return IsOk();
+  return true;
 }
 
 ForecastData WeatherForecastProvider::GetForecastData(size_t day_offset) {

@@ -122,16 +122,17 @@ class WeatherApp {
 };
 
 int main(int argc, char** argv) {
-  if (argc != 3) {
-    std::cerr << "Usage: " << argv[0] << " <api_url> <api_key>\n";
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " <api-ninjas.com KEY>\n";
     return 1;
   }
 
-  const std::string api_url = argv[1];
-  const std::string api_key = argv[2];
+  const std::string forecast_url{"https://api.open-meteo.com/v1/forecast"};
+  const std::string forecast_key{""};
+  const std::string city_url{"https://api.api-ninjas.com/v1/city"};
+  const std::string city_key{argv[1]};
 
-  WeatherApp app("https://api.open-meteo.com/v1/forecast", "", api_url,
-                 api_key);
+  WeatherApp app(forecast_url, forecast_key, city_url, city_key);
   app.Run();
 
   return 0;

@@ -12,6 +12,8 @@ struct ForecastRequest {
 
 struct ForecastPoint {
   int temperature;
+  int wind_speed;
+  int weather_code;
 };
 
 struct ForecastData {

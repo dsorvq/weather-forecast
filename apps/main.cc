@@ -5,7 +5,6 @@
 #include <ftxui/screen/screen.hpp>
 #include <iostream>
 
-#include "../include/weather_forecast/city_coordinates_provider.h"
 #include "../include/weather_forecast/weather_forecast_provider.h"
 
 using namespace ftxui;
@@ -32,7 +31,7 @@ class WeatherApp {
   }
 
   void Run() {
-    auto screen = ScreenInteractive::TerminalOutput();
+    auto screen = ScreenInteractive::Fullscreen();
     screen.Loop(renderer_);
   }
 
@@ -85,25 +84,37 @@ class WeatherApp {
   }
 
   Component ForecastContent(const weather_forecast::ForecastData& data) {
-    auto make_section = [&](const std::string& name, int temp) {
+    auto make_section = [&](const std::string& name, int temp, int wind_speed) {
       return Renderer([=] {
-        return vbox({text(name) | bold | center,
-                     text("Temp: " + std::to_string(temp) + "°C") | center}) |
+        return vbox({
+                   text(name) | bold | center,
+                   text("Temp: " + std::to_string(temp) + "°C"),
+                   text("Wind Speed: " + std::to_string(wind_speed) + "m/s"),
+               }) |
                flex | border;
       });
     };
 
     return Container::Horizontal(
-               {make_section("Morning", data.morning.temperature) | flex,
-                make_section("Afternoon", data.afternoon.temperature) | flex,
-                make_section("Evening", data.evening.temperature) | flex,
-                make_section("Night", data.night.temperature) | flex}) |
+               {make_section("Morning", data.morning.temperature,
+                             data.morning.wind_speed) |
+                    flex,
+                make_section("Afternoon", data.afternoon.temperature,
+                             data.afternoon.wind_speed) |
+                    flex,
+                make_section("Evening", data.evening.temperature,
+                             data.evening.wind_speed) |
+                    flex,
+                make_section("Night", data.night.temperature,
+                             data.night.wind_speed) |
+                    flex}) |
            flex;
   }
 
   Component ForecastWindow(const weather_forecast::ForecastData& data) {
     auto content = ForecastContent(data);
     return Renderer(content, [=] {
+      // TODO: center just doesn't work
       return window(text(data.date), content->Render() | frame);
     });
   }

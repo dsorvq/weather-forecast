@@ -1,12 +1,14 @@
 #include "weather_forecast/weather_forecast_provider.h"
 
 #include <cpr/cpr.h>
-
 #include <nlohmann/json.hpp>
+
 #include <string>
 
 #include "weather_forecast/city_coordinates_provider.h"
 #include "weather_forecast/location.h"
+
+#include <iostream>
 
 namespace weather_forecast {
 WeatherForecastProvider::WeatherForecastProvider(std::string weather_api_url,
@@ -21,6 +23,7 @@ WeatherForecastProvider::WeatherForecastProvider(std::string weather_api_url,
 
 bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
   is_ok_ = false;
+  forecast_data_.clear();
 
   if (!city_coordinates_provider_.FetchCoordinates(request.city_name)) {
     error_message_ = city_coordinates_provider_.GetErrorMessage();
@@ -39,6 +42,8 @@ bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
           {"timezone", "auto"},
           {"forecast_days", std::to_string(request.forecast_days)},
           {"hourly", "temperature_2m"},
+          {"hourly", "wind_speed_10m"},
+          {"hourly", "weather_code"},
       });
 
   if (response.status_code != 200) {
@@ -50,6 +55,8 @@ bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
   }
 
   const nlohmann::json data = nlohmann::json::parse(response.text);
+
+  std::cerr << data << '\n';
 
   if (data.empty()) {
     error_message_ = "No forecast data found";
@@ -74,6 +81,18 @@ bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
     forecast_data_.back().afternoon.temperature = temperatures[i * 24 + 12];
     forecast_data_.back().evening.temperature = temperatures[i * 24 + 17];
     forecast_data_.back().night.temperature = temperatures[i * 24 + 23];
+
+    const auto& wind_speeds = data["hourly"]["wind_speed_10m"];
+    forecast_data_.back().morning.wind_speed = wind_speeds[i * 24 + 6];
+    forecast_data_.back().afternoon.wind_speed = wind_speeds[i * 24 + 12];
+    forecast_data_.back().evening.wind_speed = wind_speeds[i * 24 + 17];
+    forecast_data_.back().night.wind_speed = wind_speeds[i * 24 + 23];
+
+    const auto& weather_codes = data["hourly"]["weather_code"];
+    forecast_data_.back().morning.weather_code = weather_codes[i * 24 + 6];
+    forecast_data_.back().afternoon.weather_code = weather_codes[i * 24 + 12];
+    forecast_data_.back().evening.weather_code = weather_codes[i * 24 + 17];
+    forecast_data_.back().night.weather_code = weather_codes[i * 24 + 23];
   }
 
   is_ok_ = true;

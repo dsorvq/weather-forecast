@@ -12,11 +12,11 @@ CityCoordinatesProvider::CityCoordinatesProvider(std::string api_url,
       is_ok_(false) {}
 
 bool CityCoordinatesProvider::FetchCoordinates(
-    const CityCoordinatesRequest& request) {
+    const std::string& city_name) {
   is_ok_ = false;
 
   cpr::Response response =
-      cpr::Get(cpr::Url{api_url_}, cpr::Parameters{{"name", request.city_name}},
+      cpr::Get(cpr::Url{api_url_}, cpr::Parameters{{"name", city_name}},
                cpr::Header{{"X-Api-Key", api_key_}});
 
   if (response.status_code != 200) {
@@ -30,7 +30,7 @@ bool CityCoordinatesProvider::FetchCoordinates(
   const nlohmann::json data = nlohmann::json::parse(response.text);
 
   if (data.empty() || !data.is_array()) {
-    error_message_ = "No location data found for city: " + request.city_name;
+    error_message_ = "No location data found for city: " + city_name;
     return false;
   }
 

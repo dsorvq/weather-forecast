@@ -4,15 +4,11 @@
 #include "location.h"
 
 namespace weather_forecast {
-struct CityCoordinatesRequest {
-  std::string city_name;
-};
-
 class CityCoordinatesProvider {
  public:
   CityCoordinatesProvider(std::string api_url, std::string api_key);
 
-  bool FetchCoordinates(const CityCoordinatesRequest& request);
+  bool FetchCoordinates(const std::string& city_name);
 
   Coordinates GetCityCoordinates() const;
 

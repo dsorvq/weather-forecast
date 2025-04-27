@@ -2,11 +2,11 @@
 #include <string>
 #include <vector>
 
-#include "location.h"
+#include "city_coordinates_provider.h"
 
 namespace weather_forecast {
 struct ForecastRequest {
-  Coordinates coordinates;
+  std::string city_name;
   int forecast_days;
 };
 
@@ -24,7 +24,9 @@ struct ForecastData {
 
 class WeatherForecastProvider {
  public:
-  WeatherForecastProvider(std::string api_url, std::string api_key);
+  WeatherForecastProvider(std::string weather_api_url,
+                          std::string weather_api_key,
+                          std::string city_api_url, std::string city_api_key);
 
   bool FetchForecastData(const ForecastRequest request);
 
@@ -40,5 +42,6 @@ class WeatherForecastProvider {
   bool is_ok_{false};
   std::vector<ForecastData> forecast_data_;
   std::string error_message_;
+  CityCoordinatesProvider city_coordinates_provider_;
 };
 }  // namespace weather_forecast

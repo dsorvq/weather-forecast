@@ -5,25 +5,41 @@
 #include <nlohmann/json.hpp>
 #include <string>
 
+#include "weather_forecast/city_coordinates_provider.h"
+#include "weather_forecast/location.h"
+
 namespace weather_forecast {
-WeatherForecastProvider::WeatherForecastProvider(std::string api_url,
-                                                 std::string api_key)
-    : api_url_(std::move(api_url)),
-      api_key_(std::move(api_key)),
+WeatherForecastProvider::WeatherForecastProvider(std::string weather_api_url,
+                                                 std::string weather_api_key,
+                                                 std::string city_api_url,
+                                                 std::string city_api_key)
+    : api_url_(std::move(weather_api_url)),
+      api_key_(std::move(weather_api_key)),
+      city_coordinates_provider_(std::move(city_api_url),
+                                 std::move(city_api_key)),
       is_ok_(false) {}
 
 bool WeatherForecastProvider::FetchForecastData(const ForecastRequest request) {
   is_ok_ = false;
 
-  cpr::Response response =
-      cpr::Get(cpr::Url{api_url_},
-               cpr::Parameters{
-                   {"latitude", std::to_string(request.coordinates.latitude)},
-                   {"longitude", std::to_string(request.coordinates.longitude)},
-                   {"timezone", "auto"},
-                   {"forecast_days", std::to_string(request.forecast_days)},
-                   {"hourly", "temperature_2m"},
-               });
+  if (!city_coordinates_provider_.FetchCoordinates(request.city_name)) {
+    error_message_ = city_coordinates_provider_.GetErrorMessage();
+    return false;
+  }
+
+  cpr::Response response = cpr::Get(
+      cpr::Url{api_url_},
+      cpr::Parameters{
+          {"latitude",
+           std::to_string(
+               city_coordinates_provider_.GetCityCoordinates().latitude)},
+          {"longitude",
+           std::to_string(
+               city_coordinates_provider_.GetCityCoordinates().longitude)},
+          {"timezone", "auto"},
+          {"forecast_days", std::to_string(request.forecast_days)},
+          {"hourly", "temperature_2m"},
+      });
 
   if (response.status_code != 200) {
     error_message_ = response.error.message.empty()

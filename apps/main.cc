@@ -57,7 +57,7 @@ class WeatherApp {
       state_.show_results = false;
     } else {
       state_.status_message =
-          "Successfully fetched coordinates for " + state_.city_name;
+          "Successfully fetched weather forecast for " + state_.city_name;
       state_.show_results = true;
     }
   }
@@ -78,37 +78,27 @@ class WeatherApp {
         day_forecasts.push_back(
             ForecastWindow(provider_.GetForecastData(day))->Render());
       }
-      children.push_back(hbox(day_forecasts));
+      children.push_back(vbox(day_forecasts));
     }
 
     return vbox(children) | border | bgcolor(Color::Black);
   }
+
   Component ForecastContent(const weather_forecast::ForecastData& data) {
-    auto morning = Renderer([&] {
-      return vbox(
-          {text("morning") | bold,
-           text("Temp: " + std::to_string(data.morning.temperature) + "°C")});
-    });
+    auto make_section = [&](const std::string& name, int temp) {
+      return Renderer([=] {
+        return vbox({text(name) | bold | center,
+                     text("Temp: " + std::to_string(temp) + "°C") | center}) |
+               flex | border;
+      });
+    };
 
-    auto afternoon = Renderer([&] {
-      return vbox(
-          {text("afternoon") | bold,
-           text("Temp: " + std::to_string(data.afternoon.temperature) + "°C")});
-    });
-
-    auto evening = Renderer([&] {
-      return vbox(
-          {text("evening") | bold,
-           text("Temp: " + std::to_string(data.evening.temperature) + "°C")});
-    });
-
-    auto night = Renderer([&] {
-      return vbox(
-          {text("night") | bold,
-           text("Temp: " + std::to_string(data.night.temperature) + "°C")});
-    });
-
-    return Container::Vertical({morning, afternoon, evening, night});
+    return Container::Horizontal(
+               {make_section("Morning", data.morning.temperature) | flex,
+                make_section("Afternoon", data.afternoon.temperature) | flex,
+                make_section("Evening", data.evening.temperature) | flex,
+                make_section("Night", data.night.temperature) | flex}) |
+           flex;
   }
 
   Component ForecastWindow(const weather_forecast::ForecastData& data) {
@@ -127,25 +117,6 @@ class WeatherApp {
 };
 
 int main(int argc, char** argv) {
-  /*
-  weather_forecast::WeatherForecastProvider provider_(
-      "https://api.open-meteo.com/v1/forecast", "");
-  ││City: Moscow ││ Latitude: 55.755798 ││ Longitude: 37.617802 ││
-  provider_.FetchForecastData({{55.755798, 37.617802}, 3});
-
-  for (int i = 0; i < 3; ++i) {
-    std::cout << provider_.GetForecastData(i).date << '\n';
-    std::cout << "   morning: "
-              << provider_.GetForecastData(i).morning.temperature << '\n';
-    std::cout << "   afternoon: "
-              << provider_.GetForecastData(i).afternoon.temperature << '\n';
-    std::cout << "   evening: "
-              << provider_.GetForecastData(i).evening.temperature << '\n';
-    std::cout << "   night: "
-              << provider_.GetForecastData(i).night.temperature << '\n';
-  }
-  */
-
   if (argc != 3) {
     std::cerr << "Usage: " << argv[0] << " <api_url> <api_key>\n";
     return 1;
